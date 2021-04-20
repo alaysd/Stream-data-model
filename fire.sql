@@ -81,6 +81,19 @@ INSERT INTO stream_details VALUES (
     2
 );
 
+DELETE TOP (1) FROM stream_details;
+
+INSERT INTO stream_details VALUES (
+    "mp",
+    "123",
+    "forex",
+    "haha",
+    "haha",
+    "haha",
+    "1",
+    "2"
+);
+
 INSERT INTO stream_details VALUES (
     "ad",
     "456",
@@ -127,3 +140,12 @@ INSERT INTO query_details VALUES (
     2,
     "select * from jaja"
 );
+
+
+
+
+CREATE TABLE HAHA (
+    Firstname VARCHAR(255),
+    KABOOM TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    PRIMARY KEY(Firstname)
+)

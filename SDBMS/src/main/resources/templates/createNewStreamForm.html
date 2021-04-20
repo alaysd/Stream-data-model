@@ -19,17 +19,33 @@
             <input id="dataSrc" type="text" name="dataSrc">
         </div>
         <div class="col-md-4">
+            <label for="dataSrcFile">Data file : </label>
+            <input id="dataSrcFile" type="text" name="dataSrcFile">
+        </div>
+    </div>
+
+    <div class="row" style="margin-top: 30px;">
+        <div class="col-md-4">
             <label for="windowSize">Window Size : </label>
             <input id="windowSize" type="number" name="windowSize">
         </div>
     </div>
+
+
     <div class="row" style="margin-top: 30px;margin-bottom: 30px">
         <div class="col-md-4">
             <label for="windowType">Window Type : </label>
             <select id="windowType" name="windowType">
-                <option>Tumbling Window</option>
-                <option>Hopping Window</option>
-                <option>Sliding Window</option>
+                <option>Tumbling</option>
+                <option>Hopping</option>
+                <option>Sliding</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="windowing">Windowing : </label>
+            <select id="windowing" name="windowing">
+                <option>Tuple</option>
+                <option>Time</option>
             </select>
         </div>
         <div class="col-md-4">
@@ -39,7 +55,7 @@
     </div>
     <div class="row mb-3">
         <div class="col-md-9">
-            <b>Attribute Name</b>
+            <b>Attribute Name and Data type</b>
         </div>
         <div class="col-md-3 text-center">
             <b>Actions</b>
@@ -47,6 +63,7 @@
     </div>
     <div id="attributes-parent-div">
     </div>
+
     <div class="row my-3">
         <div class="col-md-12">
             <button id="btn-add-attr">Add More +</button>
@@ -73,6 +90,8 @@
         </div>
     </div>
     <div id="attr-req-parent-div">
+    </div>
+    <div id="data-type-parent-div">
     </div>
     <div class="row mt-3">
         <div class="col-md-12">

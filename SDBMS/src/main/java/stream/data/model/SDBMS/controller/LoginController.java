@@ -130,6 +130,7 @@ public class LoginController {
     @PostMapping("/newStreamDetails")
     public String newStreamDetails(HttpServletRequest req) throws Exception {
         JSONObject reqBody = new JSONObject(req.getReader().lines().collect(Collectors.joining(System.lineSeparator())));
+
         JSONObject parameters = new JSONObject(reqBody.getString("json_data"));
         System.out.println(reqBody.getString("json_data"));
 
@@ -137,9 +138,11 @@ public class LoginController {
 
         // userid
         Cookie[] cookies = req.getCookies();
+        String userid = "";
         if(cookies != null) {
             for(Cookie c : cookies) {
                 if(c.getName().equals("sdbmsAppUser")) {
+                    userid = c.getValue();
                     cmdParas.put("userid", c.getValue());
                 }
             }
@@ -158,26 +161,86 @@ public class LoginController {
         cmdParas.put("dataSrc", parameters.getString("data_src"));
 
         // dataFileSrc
-        cmdParas.put("dataSrc", parameters.getString("data_file_src"));
+        cmdParas.put("dataSrcFile", parameters.getString("data_file_src"));
 
         // queries
-        JSONArray queries = new JSONArray();
-        JSONArray que = parameters.getJSONArray("queries");
-
-        for(int i = 0 ; i < que.length() ; i++) {
-            queries.put(que.getString(i));
-        }
-
+        JSONArray queries = parameters.getJSONArray("queries");
         cmdParas.put("queries", queries);
 
-
         // dataAttributes
-        JSONArray dataAttributes = new JSONArray();
-        JSONArray dataAttr = parameters.getJSONArray("elementsArray");
+        JSONArray dataAttributes = parameters.getJSONArray("elementsArray");
+        cmdParas.put("dataAttributes", dataAttributes);
 
-        for(int i = 0 ; i < que.length() ; i++) {
-            queries.put(que.getString(i));
+        // requiredAttributes
+        JSONArray requiredAttributes = parameters.getJSONArray("elementsReqArray");
+        cmdParas.put("requiredAttributes", requiredAttributes);
+
+        // requiredAttributesDataType
+        JSONArray requiredAttributesDataType = parameters.getJSONArray("dataTypeArray");
+        cmdParas.put("requiredAttributesDataType", requiredAttributesDataType);
+
+        // tableNames
+        String tableFormat = userid + "_" + String.valueOf(streamid) + "_table";
+        JSONArray tableNames = new JSONArray();
+
+        for(int i = 1 ; i <= queries.length(); i++) {
+            tableNames.put(tableFormat + String.valueOf(i));
         }
+
+        cmdParas.put("tableNames", tableNames);
+
+        // windowSize
+        cmdParas.put("windowSize", Integer.parseInt(parameters.getString("window_size")));
+
+        // windowVelocity
+        cmdParas.put("windowVelocity", Integer.parseInt(parameters.getString("velocity")));
+
+        // windowType
+        cmdParas.put("windowType", parameters.getString("window_type"));
+
+        // windowing
+        cmdParas.put("windowing", parameters.get("windowing"));
+
+        String commanmdParamters = cmdParas.toString();
+        String cmdParamters = commanmdParamters.replaceAll("\"","\\\\\"");
+
+        cmdParamters = "\"" + cmdParamters + "\"";
+
+        System.out.println(cmdParamters);
+
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        final ClassLoader classLoader = getClass().getClassLoader();
+        final File scriptFile = new File(classLoader.getResource("inputMonitor/inputMonitorCreator.sh").getFile());
+        processBuilder.command(scriptFile.getPath(), userid+"_"+streamid);
+
+        try {
+
+            Process process = processBuilder.start();
+
+            StringBuilder output = new StringBuilder();
+
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()));
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                output.append(line + "\n");
+            }
+
+            int exitVal = process.waitFor();
+            if (exitVal == 0) {
+                System.out.println("Success! creating inputMonitorCreator");
+                System.out.println(output);
+            } else {
+                //abnormal...
+                System.out.println("abnormal :: inputMonitorCreator");
+            }
+
+        } catch (Exception e) {
+            System.out.println("inputMonitorCreator process exception" + e);
+        }
+
+
 
         return "redirect:userProfile";
     }
