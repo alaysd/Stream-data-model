@@ -18,27 +18,28 @@ public class userid_streamid {
 
     public static void main(String[] args) {
         System.out.println("Arguements " + args[0]);
+//        String jsonString = args[0].substring(1);
+//        jsonString = jsonString.substring(0, jsonString.length() - 1);
+//        System.out.println(jsonString);
 
         try {
             JSONObject parameters = new JSONObject(args[0]);
             //...
-
             //...
-
             JSONArray tableNames = parameters.getJSONArray("tableNames");
             JSONArray queries = parameters.getJSONArray("queries");
             JSONArray dataAttrs = parameters.getJSONArray("dataAttributes");
             JSONArray reqAttrs = parameters.getJSONArray("requiredAttributes");
+
             JSONArray reqAttrsDatType = parameters.getJSONArray("requiredAttributesDataType");
 
             long windowSize = parameters.getLong("windowSize");
+
             long windowVelocity = parameters.getLong("windowVelocity");
             String windowType = parameters.getString("windowType");
             String dataSrc = parameters.getString("dataSrc");
             String dataFileSrc = parameters.getString("dataFileSrc");
-
             String dataTableName = parameters.getString("streamName") + "_data";
-
             //...Last record read
             int lastCount = 0;
             int[] attrNumberOfRequired = new int[reqAttrs.length()];
@@ -160,8 +161,8 @@ public class userid_streamid {
                         rsQueryCount.next();
 
                         int haha = rsQueryCount.getInt("count(*)");
-                        if(haha > 2*windowSize) {
-                            String deleteQuery = "DELETE FROM " + dataTableName + " ORDER BY insertTime LIMIT " + String.valueOf(haha - 2*windowSize);
+                        if(haha > windowSize) {
+                            String deleteQuery = "DELETE FROM " + dataTableName + " ORDER BY insertTime LIMIT " + String.valueOf(haha - windowSize);
                             Statement deleteStmt = con.createStatement();
                             try {
                                 deleteStmt.executeUpdate(deleteQuery);

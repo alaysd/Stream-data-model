@@ -20,6 +20,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -88,6 +90,50 @@ public class LoginController {
         return "dashboard/userProfile";
     }
 
+    @GetMapping("/showData")
+    public String showDataOfQuery(HttpServletRequest req, Model theModel) throws Exception {
+        String username = req.getParameter("username");
+        String streamid = req.getParameter("streamid");
+        String queryid = req.getParameter("queryid");
+
+        Cookie[] cookies = req.getCookies();
+        if(cookies != null) {
+            for(Cookie c : cookies) {
+                if(c.getName().equals("sdbmsAppUser")) {
+                    StreamUser streamUser = dbUtil.getUserDetails(c.getValue());
+                    ArrayList<Stream> userStreamDetails = dbUtil.getStreamDetails(c.getValue());
+                    theModel.addAttribute("streamUser", streamUser);
+                    theModel.addAttribute("userStreamDetails", userStreamDetails);
+                }
+            }
+        }
+
+        ResultSet rs = dbUtil.getData(username, streamid, queryid);
+        ResultSetMetaData rsmd = rs.getMetaData();
+
+        int columns = rsmd.getColumnCount();
+        ArrayList<String> columnNames = new ArrayList<String>();
+        for(int i = 1 ; i <= columns ; i++) {
+            columnNames.add(rsmd.getColumnName(i));
+        }
+
+        ArrayList<ArrayList<String>> data = new ArrayList<ArrayList<String>>();
+
+        while(rs.next()) {
+            ArrayList<String> curr = new ArrayList<String>();
+            for(int i = 1 ; i <= columns ; i++) {
+                curr.add(rs.getString(i));
+            }
+            data.add(curr);
+        }
+
+        theModel.addAttribute("columnNames", columnNames);
+        theModel.addAttribute("data", data);
+
+        return "dashboard/showData";
+
+    }
+
     @GetMapping("/streamDetails")
     public String streamDetailsCall(HttpServletRequest req, Model theModel) throws Exception {
 
@@ -104,7 +150,7 @@ public class LoginController {
                         if(s.getUsername().equals(req.getParameter("username")) && s.getStreamid().equals(req.getParameter("streamid")) ) {
                             particularStream = new Stream(s.getUsername(),
                                     s.getStreamid(), s.getSname(), s.getSource(),
-                                    s.getLink(), s.getWindowType(), s.getWindowVelocity(), s.getWindowSize());
+                                    s.getLink(), s.getWindowType(), s.getWindowVelocity(), s.getWindowSize(), s.getWindowing());
                             theModel.addAttribute("particularStream", particularStream);
                             break;
                         }
@@ -128,7 +174,7 @@ public class LoginController {
     }
 
     @PostMapping("/newStreamDetails")
-    public String newStreamDetails(HttpServletRequest req) throws Exception {
+    public String newStreamDetails(HttpServletRequest req, Model theModel) throws Exception {
         JSONObject reqBody = new JSONObject(req.getReader().lines().collect(Collectors.joining(System.lineSeparator())));
 
         JSONObject parameters = new JSONObject(reqBody.getString("json_data"));
@@ -157,11 +203,16 @@ public class LoginController {
         //streamName
         cmdParas.put("streamName", parameters.getString("stream_name"));
 
+        if(dbUtil.checkStreamName(parameters.getString("stream_name"))) {
+            theModel.addAttribute("duplicateStreamName", "Duplicate Stream Name");
+            return "createNewStreamForm";
+        }
+
         // dataSrc
         cmdParas.put("dataSrc", parameters.getString("data_src"));
 
         // dataFileSrc
-        cmdParas.put("dataSrcFile", parameters.getString("data_file_src"));
+        cmdParas.put("dataFileSrc", parameters.getString("data_file_src"));
 
         // queries
         JSONArray queries = parameters.getJSONArray("queries");
@@ -202,16 +253,14 @@ public class LoginController {
         cmdParas.put("windowing", parameters.get("windowing"));
 
         String commanmdParamters = cmdParas.toString();
-        String cmdParamters = commanmdParamters.replaceAll("\"","\\\\\"");
-
-        cmdParamters = "\"" + cmdParamters + "\"";
+        String cmdParamters = commanmdParamters;
 
         System.out.println(cmdParamters);
 
         ProcessBuilder processBuilder = new ProcessBuilder();
         final ClassLoader classLoader = getClass().getClassLoader();
         final File scriptFile = new File(classLoader.getResource("inputMonitor/inputMonitorCreator.sh").getFile());
-        processBuilder.command(scriptFile.getPath(), userid+"_"+streamid);
+        processBuilder.command(scriptFile.getPath(), userid+"_"+streamid, cmdParamters);
 
         try {
 
@@ -233,58 +282,45 @@ public class LoginController {
                 System.out.println(output);
             } else {
                 //abnormal...
+                theModel.addAttribute("duplicateStreamName", "Error creating Input Monitor");
                 System.out.println("abnormal :: inputMonitorCreator");
+                return "createNewStreamForm";
+            }
+
+            Stream newInsert = new Stream(
+                    userid,
+                    String.valueOf(streamid),
+                    parameters.getString("stream_name"),
+                    parameters.getString("data_file_src"),
+                    parameters.getString("data_src"),
+                    parameters.getString("window_type"),
+                    Integer.parseInt(parameters.getString("velocity")),
+                    Integer.parseInt(parameters.getString("window_size")),
+                    parameters.getString("windowing")
+            );
+            dbUtil.insertNewStream(newInsert);
+
+            for(int qindex = 1 ; qindex <= queries.length() ; qindex++) {
+                QueryStream queryInsert = new QueryStream(
+                    userid,
+                    String.valueOf(streamid),
+                    qindex,
+                    queries.get(qindex-1).toString()
+                );
+
+                dbUtil.insertNewQueryDetails(queryInsert);
             }
 
         } catch (Exception e) {
+            theModel.addAttribute("duplicateStreamName", "Error creating Input Monitor");
             System.out.println("inputMonitorCreator process exception" + e);
+            return "createNewStreamForm";
         }
 
 
 
         return "redirect:userProfile";
     }
-
-//    @GetMapping("/userProfile")
-//    public String userProfile(Model theModel) {
-
-
-//        ProcessBuilder processBuilder = new ProcessBuilder();
-//        final ClassLoader classLoader = getClass().getClassLoader();
-//        final File scriptFile = new File(classLoader.getResource("inputMonitorCreator.sh").getFile());
-//        processBuilder.command(scriptFile.getPath(), "Alay_456");
-//
-//        try {
-//
-//            Process process = processBuilder.start();
-//
-//            StringBuilder output = new StringBuilder();
-//
-//            BufferedReader reader = new BufferedReader(
-//                    new InputStreamReader(process.getInputStream()));
-//
-//            String line;
-//            while ((line = reader.readLine()) != null) {
-//                output.append(line + "\n");
-//            }
-//
-//            int exitVal = process.waitFor();
-//            if (exitVal == 0) {
-//                System.out.println("Success! creating inputMonitorCreator");
-//                System.out.println(output);
-//            } else {
-//                //abnormal...
-//                System.out.println("abnormal :: inputMonitorCreator");
-//            }
-//
-//        } catch (Exception e) {
-//            System.out.println("inputMonitorCreator process exception" + e);
-//        }
-//
-//
-//        return "pages/userProfile";
-
-//    }
 
     @GetMapping("/login")
     public String login(Model theModel) {

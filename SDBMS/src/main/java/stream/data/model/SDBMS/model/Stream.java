@@ -10,8 +10,9 @@ public class Stream {
     private String windowType;
     private int windowVelocity;
     private int windowSize;
+    private String windowing;
 
-    public Stream(String username, String streamid, String sname, String source, String link, String windowType, int windowVelocity, int windowSize) {
+    public Stream(String username, String streamid, String sname, String source, String link, String windowType, int windowVelocity, int windowSize, String windowing) {
         this.username = username;
         this.streamid = streamid;
         this.sname = sname;
@@ -20,8 +21,16 @@ public class Stream {
         this.windowType = windowType;
         this.windowVelocity = windowVelocity;
         this.windowSize = windowSize;
+        this.windowing = windowing;
     }
 
+    public String getWindowing() {
+        return windowing;
+    }
+
+    public void setWindowing(String windowing) {
+        this.windowing = windowing;
+    }
 
     public String getUsername() {
         return username;

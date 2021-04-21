@@ -63,7 +63,7 @@ public class DbUtil {
         while(rs.next()) {
             Stream temp = new Stream(rs.getString("username"), rs.getString("streamid")
             , rs.getString("sname"), rs.getString("source"), rs.getString("link")
-            , rs.getString("windowType"), rs.getInt("windowVelocity"), rs.getInt("windowSize"));
+            , rs.getString("windowType"), rs.getInt("windowVelocity"), rs.getInt("windowSize"), rs.getString("windowing"));
             retArr.add(temp);
         }
 
@@ -90,4 +90,59 @@ public class DbUtil {
         return retArr;
     }
 
+    public boolean checkStreamName(String streamname) throws Exception {
+
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC","alay","password");
+
+        String sql = "SELECT * FROM stream_details where sname = \'" + streamname + "\'";
+
+        Statement stmt = con.createStatement();
+        ResultSet rs = stmt.executeQuery(sql);
+
+        if(rs.next()) return true;
+
+        return false;
+
+    }
+
+    public void insertNewStream(Stream newInsert) throws Exception{
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC","alay","password");
+
+        String sql = "INSERT INTO stream_details VALUES ('"
+                + newInsert.getUsername() + "','"
+                + newInsert.getStreamid() + "','"
+                + newInsert.getSname() + "','"
+                + newInsert.getSource() + "','"
+                + newInsert.getLink() + "','"
+                + newInsert.getWindowType() + "','"
+                + newInsert.getWindowVelocity() + "','"
+                + newInsert.getWindowSize() + "','"
+                + newInsert.getWindowing() + "')";
+
+        Statement stmt = con.createStatement();
+        stmt.executeUpdate(sql);
+    }
+
+    public void insertNewQueryDetails(QueryStream queryIns) throws  Exception {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC","alay","password");
+        String sql = "INSERT INTO query_details VALUES ('"
+                + queryIns.getUsername() + "','"
+                + queryIns.getStreamid() + "','"
+                + queryIns.getQueryid() + "','"
+                + queryIns.getQuery() + "')";
+
+        Statement stmt = con.createStatement();
+        stmt.executeUpdate(sql);
+    }
+
+    public ResultSet getData(String username, String streamid, String queryid) throws Exception {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC","alay","password");
+        String sql = "SELECT * FROM " + username + "_" + streamid + "_table" + queryid;
+        Statement stmt = con.createStatement();
+        return stmt.executeQuery(sql);
+    }
 }

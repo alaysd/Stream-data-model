@@ -66,44 +66,45 @@ CREATE TABLE stream_details (
     windowType VARCHAR(255),
     windowVelocity INT,
     windowSize INT,
+    windowing VARCHAR(255),
     PRIMARY KEY(username, streamid)
 );
 
 
-INSERT INTO stream_details VALUES (
-    "ad",
-    "123",
-    "forex",
-    "haha",
-    "haha",
-    "haha",
-    1,
-    2
-);
+-- INSERT INTO stream_details VALUES (
+--     "ad",
+--     "123",
+--     "forex",
+--     "haha",
+--     "haha",
+--     "haha",
+--     1,
+--     2
+-- );
 
-DELETE TOP (1) FROM stream_details;
+-- DELETE TOP (1) FROM stream_details;
 
-INSERT INTO stream_details VALUES (
-    "mp",
-    "123",
-    "forex",
-    "haha",
-    "haha",
-    "haha",
-    "1",
-    "2"
-);
+-- INSERT INTO stream_details VALUES (
+--     "mp",
+--     "123",
+--     "forex",
+--     "haha",
+--     "haha",
+--     "haha",
+--     "1",
+--     "2"
+-- );
 
-INSERT INTO stream_details VALUES (
-    "ad",
-    "456",
-    "forex",
-    "haha",
-    "haha",
-    "haha",
-    1,
-    2
-);
+-- INSERT INTO stream_details VALUES (
+--     "ad",
+--     "456",
+--     "forex",
+--     "haha",
+--     "haha",
+--     "haha",
+--     1,
+--     2
+-- );
 
 INSERT INTO stream_details VALUES (
     "ad",
@@ -140,12 +141,3 @@ INSERT INTO query_details VALUES (
     2,
     "select * from jaja"
 );
-
-
-
-
-CREATE TABLE HAHA (
-    Firstname VARCHAR(255),
-    KABOOM TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-    PRIMARY KEY(Firstname)
-)

@@ -72,7 +72,7 @@
     <hr>
     <div class="row mb-3">
         <div class="col-md-12">
-            <b>Queries</b>
+            <b>Queries | For table name please write STREAM_NAME_data </b>
         </div>
     </div>
     <div id="queries-parent-div">
@@ -107,6 +107,7 @@
             <button id="btn-cancel" class="btn btn-secondary">Cancel</button>
         </div>
     </div>
+    <p th:if="${duplicateStreamName != null}" th:text="${duplicateStreamName}" style="color: red"></p>
 </div>
 <form action="/userProfile" method="get" id="userProfileForm"></form>
 <th:block layout:fragment="script">
