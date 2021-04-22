@@ -967,7 +967,6 @@ btnSubmit.addEventListener('click', async function(event) {
         json_data['window_type'] = document.getElementById('windowType').value;
         json_data['velocity'] = document.getElementById('velocity').value;
         json_data['windowing'] = document.getElementById('windowing').value;
-        console.log("windowing", document.getElementById('windowing').value)
         json_data['elementsArray'] = elementsArray;
         json_data['queries'] = queries;
         json_data['elementsReqArray'] = elementsReqArray;

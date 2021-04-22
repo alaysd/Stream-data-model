@@ -141,3 +141,11 @@ INSERT INTO query_details VALUES (
     2,
     "select * from jaja"
 );
+
+CREATE TABLE trial (
+    id int,
+    insertTime timestamp not null default current_timestamp
+);
+
+SELECT* FROM trial
+WHERE STR_TO_DATE(lastseen, '%Y-%m-%d %H:%i:%s') >= DATE_SUB(NOW(), INTERVAL 10 MINUTE)
