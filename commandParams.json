@@ -42,3 +42,26 @@
     "windowVelocity": 30,
     "windowType": "Tumbling"
 }
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////
+// Test details
+//////////////////////////////////////////////////////////////////////////////////////
+
+{
+    "userid": "alay",
+    "streamid": "123",
+    "streamName": "forex_alay_123",
+    "dataSrc": "forex-data.csv",
+    "dataFileSrc": "forex-data.csv",
+    "queries": ["select * from forex_alay_123_data", "select * from forex_alay_123_data", "select * from forex_alay_123_data"],
+    "dataAttributes": ["Item", "LastPrice", "LastDiffValue", "LastDiffPercentage", "DailyRangeLow", "DailyRangeHigh", "Bid", "Ask"],
+    "requiredAttributes": ["Item", "LastPrice", "DailyRangeLow", "DailyRangeHigh"],
+    "requiredAttributesDataType": ["VARCHAR(255)", "INT", "INT", "INT"],
+    "tableNames": ["forex_data_table1", "forex_data_table2", "forex_data_table3"],
+    "windowSize": 20,
+    "windowVelocity": 30,
+    "windowType": "Tumbling",
+    "windowing": "Tuple"
+}
