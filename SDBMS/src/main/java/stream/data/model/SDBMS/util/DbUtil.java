@@ -10,12 +10,14 @@ import java.util.ArrayList;
 
 @Service
 public class DbUtil {
+    public static String un = "alay";
+    public static String pw = "password";
 
     public int registerNewUser(StreamUser curr) {
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC","alay","password");
+            Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC","alay",pw);
             String sql = "INSERT INTO user_details VALUES (" +
                     "\"" + curr.getUsername() +
                     "\", \"" + curr.getFirstname() +
@@ -36,7 +38,7 @@ public class DbUtil {
     public StreamUser getUserDetails(String userName) throws Exception {
 
         Class.forName("com.mysql.cj.jdbc.Driver");
-        Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC","alay","password");
+        Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC",un,pw);
 
         String sql = "SELECT * FROM user_details where Username = \'" + userName + "\'";
         Statement stmt = con.createStatement();
@@ -52,7 +54,7 @@ public class DbUtil {
 
     public ArrayList<Stream> getStreamDetails(String userName) throws Exception {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC","alay","password");
+        Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC",un,pw);
 
         String sql = "SELECT * FROM stream_details where username = \'" + userName + "\'";
         Statement stmt = con.createStatement();
@@ -74,7 +76,7 @@ public class DbUtil {
 
     public ArrayList<QueryStream> getQueries(String username, String streamid) throws Exception {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC","alay","password");
+        Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC",un,pw);
 
         String sql = "SELECT * FROM query_details where username = \'" + username + "\' and streamid = \'"+streamid+"\'";
         Statement stmt = con.createStatement();
@@ -93,7 +95,7 @@ public class DbUtil {
     public boolean checkStreamName(String streamname) throws Exception {
 
         Class.forName("com.mysql.cj.jdbc.Driver");
-        Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC","alay","password");
+        Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC",un,pw);
 
         String sql = "SELECT * FROM stream_details where sname = \'" + streamname + "\'";
 
@@ -108,7 +110,7 @@ public class DbUtil {
 
     public void insertNewStream(Stream newInsert) throws Exception{
         Class.forName("com.mysql.cj.jdbc.Driver");
-        Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC","alay","password");
+        Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC",un,pw);
 
         String sql = "INSERT INTO stream_details VALUES ('"
                 + newInsert.getUsername() + "','"
@@ -127,7 +129,7 @@ public class DbUtil {
 
     public void insertNewQueryDetails(QueryStream queryIns) throws  Exception {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC","alay","password");
+        Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC",un,pw);
         String sql = "INSERT INTO query_details VALUES ('"
                 + queryIns.getUsername() + "','"
                 + queryIns.getStreamid() + "','"
@@ -140,7 +142,7 @@ public class DbUtil {
 
     public ResultSet getData(String username, String streamid, String queryid) throws Exception {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC","alay","password");
+        Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC",un,pw);
         String sql = "SELECT * FROM " + username + "_" + streamid + "_table" + queryid;
         Statement stmt = con.createStatement();
         return stmt.executeQuery(sql);

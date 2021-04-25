@@ -21,11 +21,12 @@ public class userid_streamid {
 
     public static void main(String[] args) {
         System.out.println("Arguements " + args[0]);
-
+        String un = "alay";
+        String pw = "pw";
         try {
             JSONObject parameters = new JSONObject(args[0]);
-            //...
-            //...
+            // ...
+            // ...
             JSONArray tableNames = parameters.getJSONArray("tableNames");
             JSONArray queries = parameters.getJSONArray("queries");
             JSONArray dataAttrs = parameters.getJSONArray("dataAttributes");
@@ -42,10 +43,10 @@ public class userid_streamid {
             String dataTableName = parameters.getString("streamName") + "_data";
             String windowing = parameters.getString("windowing");
 
-            //...Last record read
+            // ...Last record read
             int lastCount = 0;
 
-            //...Time based
+            // ...Time based
             Timestamp tsPrevTime = new Timestamp(new java.util.Date().getTime());
             Date date = new Date();
             date.setTime(tsPrevTime.getTime());
@@ -55,25 +56,24 @@ public class userid_streamid {
             int[] attrNumberOfRequired = new int[reqAttrs.length()];
             try {
 
-
                 int j = 0;
-                for(int i = 0 ; i < dataAttrs.length() && j < reqAttrs.length() ; i++) {
+                for (int i = 0; i < dataAttrs.length() && j < reqAttrs.length(); i++) {
                     System.out.println(dataAttrs.getString(i) + " :: " + reqAttrs.getString(j));
-                    if(dataAttrs.getString(i).equals(reqAttrs.getString(j))) {
+                    if (dataAttrs.getString(i).equals(reqAttrs.getString(j))) {
                         attrNumberOfRequired[j] = i;
                         j++;
                     }
                 }
 
-
                 // CREATING DATA TABLE;
                 Class.forName("com.mysql.cj.jdbc.Driver");
-                Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC","alay","password");
-                Statement stmt=con.createStatement();
-
+                Connection con = DriverManager.getConnection(
+                        "jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC",
+                        un, pw);
+                Statement stmt = con.createStatement();
 
                 String sqlQuery = "CREATE TABLE " + dataTableName + " ( ";
-                for(int k = 0 ; k < reqAttrs.length() ; k++) {
+                for (int k = 0; k < reqAttrs.length(); k++) {
                     sqlQuery += reqAttrs.getString(k) + " " + reqAttrsDatType.getString(k) + ",";
                 }
                 sqlQuery += "insertTime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP )";
@@ -89,45 +89,45 @@ public class userid_streamid {
                 System.out.println("ERRORRRR : " + e);
             }
 
-
             CSVParser csvParser = new CSVParserBuilder().withSeparator(',').build();
-            while(true) {
+            while (true) {
 
-                if(windowType.equals("Tumbling")) {
-                    try(CSVReader reader = new CSVReaderBuilder(new FileReader("/home/alay/workspace/"+dataFileSrc))
+                if (windowType.equals("Tumbling")) {
+                    try (CSVReader reader = new CSVReaderBuilder(new FileReader("/home/alay/workspace/" + dataFileSrc))
                             .withCSVParser(csvParser)
-                            .withSkipLines(windowing.equals("Tuple") ? lastCount : lastTimeCount)
-                            .build()) {
+                            .withSkipLines(windowing.equals("Tuple") ? lastCount : lastTimeCount).build()) {
                         System.out.println("Tumbling");
-
-
 
                         long startTime = System.currentTimeMillis();
 
-                        if(windowing.equals("Tuple")) {
+                        if (windowing.equals("Tuple")) {
                             // Inserting data into database;
                             Class.forName("com.mysql.cj.jdbc.Driver");
-                            Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC","alay","password");
+                            Connection con = DriverManager.getConnection(
+                                    "jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC",
+                                    un, pw);
                             int i;
-                            for(i = 0 ; i < windowSize ; i++) {
-                                Connection con1=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC","alay","password");
+                            for (i = 0; i < windowSize; i++) {
+                                Connection con1 = DriverManager.getConnection(
+                                        "jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC",
+                                        un, pw);
 
                                 String[] tuple = reader.readNext();
-                                if(tuple==null) break;
+                                if (tuple == null)
+                                    break;
 
-                                for (String attribute:
-                                        tuple) {
+                                for (String attribute : tuple) {
                                     System.out.print(attribute + " ");
                                 }
                                 String valuesToInsert = "";
                                 int currReqIndex = 0;
                                 System.out.println();
 
-                                for(int j = 0 ; j < tuple.length && currReqIndex < attrNumberOfRequired.length; j++) {
-                                    if(j == attrNumberOfRequired[currReqIndex]) {
+                                for (int j = 0; j < tuple.length && currReqIndex < attrNumberOfRequired.length; j++) {
+                                    if (j == attrNumberOfRequired[currReqIndex]) {
 
                                         valuesToInsert += "\"" + tuple[j] + "\"";
-                                        if(currReqIndex != attrNumberOfRequired.length-1) {
+                                        if (currReqIndex != attrNumberOfRequired.length - 1) {
                                             valuesToInsert += ",";
                                         }
                                         currReqIndex++;
@@ -136,17 +136,16 @@ public class userid_streamid {
 
                                 System.out.println("valuesToInsert" + valuesToInsert);
 
-
                                 System.out.println();
 
                                 // Insert the tuples in database;
-                                Statement stmt=con1.createStatement();
+                                Statement stmt = con1.createStatement();
 
                                 String insertTuple = "INSERT INTO " + dataTableName + "(";
 
-                                for(int itq = 0 ; itq < reqAttrs.length() ; itq++) {
+                                for (int itq = 0; itq < reqAttrs.length(); itq++) {
                                     insertTuple += reqAttrs.getString(itq);
-                                    if(itq != reqAttrs.length() - 1) {
+                                    if (itq != reqAttrs.length() - 1) {
                                         insertTuple += ",";
                                     }
                                 }
@@ -155,10 +154,10 @@ public class userid_streamid {
 
                                 System.out.println(insertTuple);
 
-                                try{
+                                try {
                                     stmt.executeUpdate(insertTuple);
                                 } catch (Exception e) {
-                                    System.out.println("Error insert into data table at row " + i + " error "  + e);
+                                    System.out.println("Error insert into data table at row " + i + " error " + e);
                                 }
 
                                 con1.close();
@@ -173,22 +172,23 @@ public class userid_streamid {
                             rsQueryCount.next();
 
                             int haha = rsQueryCount.getInt("count(*)");
-                            if(haha > windowSize) {
-                                String deleteQuery = "DELETE FROM " + dataTableName + " ORDER BY insertTime LIMIT " + String.valueOf(haha - windowSize);
+                            if (haha > windowSize) {
+                                String deleteQuery = "DELETE FROM " + dataTableName + " ORDER BY insertTime LIMIT "
+                                        + String.valueOf(haha - windowSize);
                                 Statement deleteStmt = con.createStatement();
                                 try {
                                     deleteStmt.executeUpdate(deleteQuery);
                                 } catch (Exception e) {
-                                    System.out.println("ERRROR deleting records " + e );
+                                    System.out.println("ERRROR deleting records " + e);
                                 }
                             }
 
                             // Query processing
 
-                            Statement stmt=con.createStatement();
+                            Statement stmt = con.createStatement();
 
-                            if(i != 0) {
-                                for(int k = 0 ; k < tableNames.length() ; k++) {
+                            if (i != 0) {
+                                for (int k = 0; k < tableNames.length(); k++) {
 
                                     try {
                                         String dropSql = "drop table " + tableNames.getString(k);
@@ -197,7 +197,8 @@ public class userid_streamid {
                                         System.out.println("Unable to drop " + e);
                                     }
                                     try {
-                                        String createSql = "CREATE TABLE " + tableNames.getString(k) + " AS " + queries.getString(k);
+                                        String createSql = "CREATE TABLE " + tableNames.getString(k) + " AS "
+                                                + queries.getString(k);
                                         System.out.println(createSql);
                                         stmt.executeUpdate(createSql);
                                     } catch (Exception e) {
@@ -208,49 +209,49 @@ public class userid_streamid {
 
                             con.close();
 
-
                             System.out.println("======================");
                             lastCount += i;
 
-                        } else if(windowing.equals("Time")) {
+                        } else if (windowing.equals("Time")) {
                             Class.forName("com.mysql.cj.jdbc.Driver");
-                            Connection con1=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC","alay","password");
-                            Statement stmt=con1.createStatement();
+                            Connection con1 = DriverManager.getConnection(
+                                    "jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC",
+                                    un, pw);
+                            Statement stmt = con1.createStatement();
                             String[] tuple = reader.readNext();
-                            if(tuple != null) {
+                            if (tuple != null) {
                                 String valuesToInsert = "";
                                 int currReqIndex = 0;
 
-                                for(int j = 0 ; j < tuple.length && currReqIndex < attrNumberOfRequired.length; j++) {
-                                    if(j == attrNumberOfRequired[currReqIndex]) {
+                                for (int j = 0; j < tuple.length && currReqIndex < attrNumberOfRequired.length; j++) {
+                                    if (j == attrNumberOfRequired[currReqIndex]) {
 
                                         valuesToInsert += "\"" + tuple[j] + "\"";
-                                        if(currReqIndex != attrNumberOfRequired.length-1) {
+                                        if (currReqIndex != attrNumberOfRequired.length - 1) {
                                             valuesToInsert += ",";
                                         }
                                         currReqIndex++;
                                     }
                                 }
 
-
                                 // Insert the tuples in database;
-
 
                                 String insertTuple = "INSERT INTO " + dataTableName + "(";
 
-                                for(int itq = 0 ; itq < reqAttrs.length() ; itq++) {
+                                for (int itq = 0; itq < reqAttrs.length(); itq++) {
                                     insertTuple += reqAttrs.getString(itq);
-                                    if(itq != reqAttrs.length() - 1) {
+                                    if (itq != reqAttrs.length() - 1) {
                                         insertTuple += ",";
                                     }
                                 }
 
                                 insertTuple += " ) values  (" + valuesToInsert + " )";
 
-                                try{
+                                try {
                                     stmt.executeUpdate(insertTuple);
                                 } catch (Exception e) {
-                                    System.out.println("Error insert into data table at row TIME BASED " + lastTimeCount +" error "  + e);
+                                    System.out.println("Error insert into data table at row TIME BASED " + lastTimeCount
+                                            + " error " + e);
                                 }
 
                                 lastTimeCount++;
@@ -259,7 +260,9 @@ public class userid_streamid {
 
                             // Deleting old data;
 
-                            String deleteOldDataTime = "DELETE FROM "+dataTableName+" WHERE STR_TO_DATE(insertTime, '%Y-%m-%d %H:%i:%s') < DATE_SUB('"+prevTime+"', INTERVAL "+windowSize+" MINUTE)";
+                            String deleteOldDataTime = "DELETE FROM " + dataTableName
+                                    + " WHERE STR_TO_DATE(insertTime, '%Y-%m-%d %H:%i:%s') < DATE_SUB('" + prevTime
+                                    + "', INTERVAL " + windowSize + " MINUTE)";
                             try {
                                 stmt.executeUpdate(deleteOldDataTime);
                             } catch (Exception e) {
@@ -275,11 +278,11 @@ public class userid_streamid {
 
                             long diffMinutes = (prev.getTime() - curr.getTime()) / (60 * 1000) % 60;
 
-                            if(diffMinutes >= windowVelocity) {
-                                Date nextDateTime = DateUtils.addMinutes(prev, (int)windowSize);
+                            if (diffMinutes >= windowVelocity) {
+                                Date nextDateTime = DateUtils.addMinutes(prev, (int) windowSize);
                                 String nextTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(nextDateTime);
-                                //insert new data of windowSize;
-                                for(int k = 0 ; k < tableNames.length() ; k++) {
+                                // insert new data of windowSize;
+                                for (int k = 0; k < tableNames.length(); k++) {
 
                                     try {
                                         String dropSql = "drop table " + tableNames.getString(k);
@@ -288,7 +291,9 @@ public class userid_streamid {
                                         System.out.println("Unable to drop " + e);
                                     }
                                     try {
-                                        String createSql = "CREATE TABLE " + tableNames.getString(k) + " AS " + queries.getString(k) + " WHERE insertTime BETWEEN '" + prevTime + "' and '" + nextTime +"'";
+                                        String createSql = "CREATE TABLE " + tableNames.getString(k) + " AS "
+                                                + queries.getString(k) + " WHERE insertTime BETWEEN '" + prevTime
+                                                + "' and '" + nextTime + "'";
                                         System.out.println(createSql);
                                         stmt.executeUpdate(createSql);
                                     } catch (Exception e) {
@@ -299,52 +304,51 @@ public class userid_streamid {
 
                             }
 
-
                             con1.close();
 
-
                         }
-
-
 
                         System.out.println(lastCount);
 
                         long stopTime = System.currentTimeMillis();
 
-                        if((stopTime-startTime) <= windowVelocity*1000 && windowing.equals("Tuple")) {
-                            Thread.sleep(windowVelocity*1000 - (stopTime-startTime));
+                        if ((stopTime - startTime) <= windowVelocity * 1000 && windowing.equals("Tuple")) {
+                            Thread.sleep(windowVelocity * 1000 - (stopTime - startTime));
                         }
 
                     } catch (Exception e) {
                         System.out.println("Error in while(true) " + e);
                     }
 
-                } else if(windowType.equals("Sliding")) {
-                    try (CSVReader reader = new CSVReaderBuilder(new FileReader("/home/alay/workspace/"+dataFileSrc))
-                            .withCSVParser(csvParser)
-                            .build()){
+                } else if (windowType.equals("Sliding")) {
+                    try (CSVReader reader = new CSVReaderBuilder(new FileReader("/home/alay/workspace/" + dataFileSrc))
+                            .withCSVParser(csvParser).build()) {
                         long startTime = System.currentTimeMillis();
                         List<String[]> allData = reader.readAll();
 
                         Class.forName("com.mysql.cj.jdbc.Driver");
-                        Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC","alay","password");
+                        Connection con = DriverManager.getConnection(
+                                "jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC",
+                                un, pw);
 
-
-                        for(int i = Math.max(0, (int)allData.size() - (int)windowSize) ; i < allData.size() ; i++) {
-                            for(String attribute : allData.get(i)) {
+                        for (int i = Math.max(0, (int) allData.size() - (int) windowSize); i < allData.size(); i++) {
+                            for (String attribute : allData.get(i)) {
                                 System.out.print(attribute + " ");
                             }
-                            Connection con1=DriverManager.getConnection("jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC","alay","password");
+                            Connection con1 = DriverManager.getConnection(
+                                    "jdbc:mysql://localhost:3306/sdbms?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC",
+                                    un, pw);
 
                             String valuesToInsert = "";
                             int currReqIndex = 0;
                             System.out.println();
 
-                            for(int j = 0 ; j < allData.get(i).length && currReqIndex < attrNumberOfRequired.length; j++) {
-                                if(j == attrNumberOfRequired[currReqIndex]) {
+                            for (int j = 0; j < allData.get(i).length
+                                    && currReqIndex < attrNumberOfRequired.length; j++) {
+                                if (j == attrNumberOfRequired[currReqIndex]) {
 
                                     valuesToInsert += "\"" + allData.get(i)[j] + "\"";
-                                    if(currReqIndex != attrNumberOfRequired.length-1) {
+                                    if (currReqIndex != attrNumberOfRequired.length - 1) {
                                         valuesToInsert += ",";
                                     }
                                     currReqIndex++;
@@ -353,17 +357,16 @@ public class userid_streamid {
 
                             System.out.println("valuesToInsert" + valuesToInsert);
 
-
                             System.out.println();
 
                             // Insert the tuples in database;
-                            Statement stmt=con1.createStatement();
+                            Statement stmt = con1.createStatement();
 
                             String insertTuple = "INSERT INTO " + dataTableName + "(";
 
-                            for(int itq = 0 ; itq < reqAttrs.length() ; itq++) {
+                            for (int itq = 0; itq < reqAttrs.length(); itq++) {
                                 insertTuple += reqAttrs.getString(itq);
-                                if(itq != reqAttrs.length() - 1) {
+                                if (itq != reqAttrs.length() - 1) {
                                     insertTuple += ",";
                                 }
                             }
@@ -372,10 +375,10 @@ public class userid_streamid {
 
                             System.out.println(insertTuple);
 
-                            try{
+                            try {
                                 stmt.executeUpdate(insertTuple);
                             } catch (Exception e) {
-                                System.out.println("Error insert into data table at row " + i + " error "  + e);
+                                System.out.println("Error insert into data table at row " + i + " error " + e);
                             }
 
                             con1.close();
@@ -389,20 +392,20 @@ public class userid_streamid {
                         rsQueryCount.next();
 
                         int haha = rsQueryCount.getInt("count(*)");
-                        if(haha > windowSize) {
-                            String deleteQuery = "DELETE FROM " + dataTableName + " ORDER BY insertTime LIMIT " + String.valueOf(haha - windowSize);
+                        if (haha > windowSize) {
+                            String deleteQuery = "DELETE FROM " + dataTableName + " ORDER BY insertTime LIMIT "
+                                    + String.valueOf(haha - windowSize);
                             Statement deleteStmt = con.createStatement();
                             try {
                                 deleteStmt.executeUpdate(deleteQuery);
                             } catch (Exception e) {
-                                System.out.println("ERRROR deleting records " + e );
+                                System.out.println("ERRROR deleting records " + e);
                             }
                         }
 
-                        Statement stmt=con.createStatement();
+                        Statement stmt = con.createStatement();
 
-
-                        for(int k = 0 ; k < tableNames.length() ; k++) {
+                        for (int k = 0; k < tableNames.length(); k++) {
 
                             try {
                                 String dropSql = "drop table " + tableNames.getString(k);
@@ -411,7 +414,8 @@ public class userid_streamid {
                                 System.out.println("Unable to drop " + e);
                             }
                             try {
-                                String createSql = "CREATE TABLE " + tableNames.getString(k) + " AS " + queries.getString(k);
+                                String createSql = "CREATE TABLE " + tableNames.getString(k) + " AS "
+                                        + queries.getString(k);
                                 System.out.println(createSql);
                                 stmt.executeUpdate(createSql);
                             } catch (Exception e) {
@@ -419,17 +423,15 @@ public class userid_streamid {
                             }
                         }
 
-
                         con.close();
 
                         System.out.println("=========================");
 
                         long stopTime = System.currentTimeMillis();
 
-                        if((stopTime-startTime) <= windowVelocity*1000) {
-                            Thread.sleep(windowVelocity*1000 - (stopTime-startTime));
+                        if ((stopTime - startTime) <= windowVelocity * 1000) {
+                            Thread.sleep(windowVelocity * 1000 - (stopTime - startTime));
                         }
-
 
                     } catch (Exception e) {
                         System.out.println("Sliding exception " + e);
@@ -441,8 +443,6 @@ public class userid_streamid {
         } catch (Exception e) {
             System.out.println("ERROR : " + e);
         }
-
-
 
     }
 }
