@@ -71,54 +71,6 @@ CREATE TABLE stream_details (
 );
 
 
--- INSERT INTO stream_details VALUES (
---     "ad",
---     "123",
---     "forex",
---     "haha",
---     "haha",
---     "haha",
---     1,
---     2
--- );
-
--- DELETE TOP (1) FROM stream_details;
-
--- INSERT INTO stream_details VALUES (
---     "mp",
---     "123",
---     "forex",
---     "haha",
---     "haha",
---     "haha",
---     "1",
---     "2"
--- );
-
--- INSERT INTO stream_details VALUES (
---     "ad",
---     "456",
---     "forex",
---     "haha",
---     "haha",
---     "haha",
---     1,
---     2
--- );
-
-INSERT INTO stream_details VALUES (
-    "ad",
-    "789",
-    "bc",
-    "haha",
-    "haha",
-    "haha",
-    1,
-    2
-);
-
-
-
 CREATE TABLE query_details (
     username VARCHAR(255),
     streamid VARCHAR(255),
@@ -127,6 +79,7 @@ CREATE TABLE query_details (
     PRIMARY KEY(username, streamid, queryid)
 );
 
+-- fire till above
 
 INSERT INTO query_details VALUES (
     "ad",
@@ -147,5 +100,4 @@ CREATE TABLE trial (
     insertTime timestamp not null default current_timestamp
 );
 
-SELECT* FROM trial
-WHERE STR_TO_DATE(lastseen, '%Y-%m-%d %H:%i:%s') >= DATE_SUB(NOW(), INTERVAL 10 MINUTE)
+DELETE FROM trial WHERE STR_TO_DATE(insertTime, '%Y-%m-%d %H:%i:%s') >= DATE_SUB(NOW(), INTERVAL 10 MINUTE);
