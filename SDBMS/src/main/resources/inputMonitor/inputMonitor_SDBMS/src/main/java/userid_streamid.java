@@ -22,7 +22,7 @@ public class userid_streamid {
     public static void main(String[] args) {
         System.out.println("Arguements " + args[0]);
         String un = "alay";
-        String pw = "pw";
+        String pw = "password";
         try {
             JSONObject parameters = new JSONObject(args[0]);
             // ...
